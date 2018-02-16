@@ -84,16 +84,16 @@ void CPU::decode() {
   switch(opcode) {
     case 0x00:
       switch(funct) {
-        case 0x00: D(cout << "sll " << regNames[rd] << ", " << regNames[rt] << ", " << dec << shamt);
+        case 0x00: D(cout << "sll " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
                    writeDest = true; destReg = rd;
                    aluOp = SHF_L;
-                   aluSrc1 = regFile[rt];
+                   aluSrc1 = regFile[rs];
                    aluSrc2 = shamt;
                    break;
-        case 0x03: D(cout << "sra " << regNames[rd] << ", " << regNames[rt] << ", " << dec << shamt);
+        case 0x03: D(cout << "sra " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
                    writeDest = true; destReg = rd;
                    aluOp = SHF_R;
-                   aluSrc1 = regFile[rt];
+                   aluSrc1 = regFile[rs];
                    aluSrc2 = shamt;
                    break;
         case 0x08: D(cout << "jr " << regNames[rs]);
