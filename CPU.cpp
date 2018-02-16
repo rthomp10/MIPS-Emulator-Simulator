@@ -70,10 +70,10 @@ void CPU::decode() {
   // case statement below!
     
     
-    opIsLoad = 0;
-    opIsStore = 0;
-    opIsMultDiv = 0;
-    writeDest = false; destReg = 0;
+    opIsLoad = false;
+    opIsStore = false;
+    opIsMultDiv = false;
+    writeDest = false; destReg = REG_ZERO;
     aluSrc1 = 0;
     aluSrc2 = 0;
     storeData = 0;
@@ -84,19 +84,32 @@ void CPU::decode() {
   switch(opcode) {
     case 0x00:
       switch(funct) {
-        case 0x00: D(cout << "sll " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
+        case 0x00: D(cout << "sll " << regNames[rd] << ", " << regNames[rt] << ", " << dec << shamt);
+                   writeDest = true; destReg = rd;
+                   aluOp = SHF_L;
+                   aluSrc1 = regFile[rt];
+                   aluSrc2 = shamt;
                    break;
-        case 0x03: D(cout << "sra " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
+        case 0x03: D(cout << "sra " << regNames[rd] << ", " << regNames[rt] << ", " << dec << shamt);
+                   writeDest = true; destReg = rd;
+                   aluOp = SHF_R;
+                   aluSrc1 = regFile[rt];
+                   aluSrc2 = shamt;
                    break;
         case 0x08: D(cout << "jr " << regNames[rs]);
+                   pc = regFile[rs];
                    break;
         case 0x10: D(cout << "mfhi " << regNames[rd]);
+                   writeDest = true; destReg = rd;
+                   aluOp = ADD;
+                   aluSrc1 = hi;
+                   aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x12: D(cout << "mflo " << regNames[rd]);
                    writeDest = true; destReg = rd;
                    aluOp = ADD;
                    aluSrc1 = lo;
-                   aluSrc2 = regFile[0];
+                   aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x18: D(cout << "mult " << regNames[rs] << ", " << regNames[rt]);
                    opIsMultDiv = true;
@@ -106,7 +119,6 @@ void CPU::decode() {
                    break;
         case 0x1a: D(cout << "div " << regNames[rs] << ", " << regNames[rt]);
                    opIsMultDiv = true;
-                   writeDest = true; destReg = rd;
                    aluOp = DIV;
                    aluSrc1 = regFile[rs];
                    aluSrc2 = regFile[rt];
@@ -125,17 +137,9 @@ void CPU::decode() {
                    break;
         case 0x2a: D(cout << "slt " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
                    writeDest = true; destReg = rd;
-                   aluOp = ADD;
-                   if( regFile[rs] < regFile[rt] )
-                   {
-                       aluSrc1 = regFile[REG_ZERO];
-                       aluSrc2 = 1;
-                   }
-                   else
-                   {
-                       aluSrc1 = regFile[REG_ZERO];
-                       aluSrc2 = regFile[REG_ZERO];
-                   }
+                   aluOp = CMP_LT;
+                   aluSrc1 = regFile[rs];
+                   aluSrc2 = regFile[rt];
                    break;
         default: cerr << "unimplemented instruction: pc = 0x" << hex << pc - 4 << endl;
       }
@@ -153,10 +157,14 @@ void CPU::decode() {
     case 0x04: D(cout << "beq " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
                if( regFile[rs] == regFile[rt] )
                {
-                   pc = 4 + pc + (simm << 2);
+                   pc = pc + (simm << 2);
                }
                break;
     case 0x05: D(cout << "bne " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
+               if( regFile[rs] != regFile[rt] )
+               {
+                   pc = pc + (simm << 2);
+               }
                break;
     case 0x09: D(cout << "addiu " << regNames[rt] << ", " << regNames[rs] << ", " << dec << simm);
                aluOp = ADD;
@@ -165,6 +173,10 @@ void CPU::decode() {
                aluSrc2 = simm;
                break;
     case 0x0c: D(cout << "andi " << regNames[rt] << ", " << regNames[rs] << ", " << dec << uimm);
+               writeDest = true; destReg = rt;
+               aluOp = AND;
+               aluSrc1 = regFile[rs];
+               aluSrc2 = uimm;
                break;
     case 0x0f: D(cout << "lui " << regNames[rt] << ", " << dec << simm);
                writeDest = true; destReg = rt;
