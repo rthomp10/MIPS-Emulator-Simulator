@@ -1,6 +1,7 @@
 /******************************
  * Ryan Thompson
- * CS 3339 - Spring 2018
+ * Project 2
+ * CS 3339 - Spring 2018 Section 263
  ******************************/
 #include "CPU.h"
 
@@ -52,8 +53,6 @@ void CPU::decode() {
   uint32_t uimm;        // unsigned version of immediate (I-type)
   int32_t  simm;        // signed version of immediate (I-type)
   uint32_t addr;        // jump address offset field (J-type)
-  uint32_t BranchAddress;
-  uint32_t SignExtImm;
 
     opcode = (instr >> 26);     //Register Operation, [31,26] of the instruction
     rs     = (instr >> 21) & 0x1f;  //Source register, [25,21] of the instruction
@@ -84,58 +83,68 @@ void CPU::decode() {
   switch(opcode) {
     case 0x00:
       switch(funct) {
-        case 0x00: D(cout << "sll " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
+        case 0x00: //shfts the data in the rs register with the given amount
+                   D(cout << "sll " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
                    writeDest = true; destReg = rd;
                    aluOp = SHF_L;
                    aluSrc1 = regFile[rs];
                    aluSrc2 = shamt;
                    break;
-        case 0x03: D(cout << "sra " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
+        case 0x03: //the same as sll, but to the right
+                   D(cout << "sra " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
                    writeDest = true; destReg = rd;
                    aluOp = SHF_R;
                    aluSrc1 = regFile[rs];
                    aluSrc2 = shamt;
                    break;
-        case 0x08: D(cout << "jr " << regNames[rs]);
+        case 0x08: //the programmer counter is assigned the value in rs
+                   D(cout << "jr " << regNames[rs]);
                    pc = regFile[rs];
                    break;
-        case 0x10: D(cout << "mfhi " << regNames[rd]);
+        case 0x10: //moves the hi data into the destination register
+                   D(cout << "mfhi " << regNames[rd]);
                    writeDest = true; destReg = rd;
                    aluOp = ADD;
                    aluSrc1 = hi;
                    aluSrc2 = regFile[REG_ZERO];
                    break;
-        case 0x12: D(cout << "mflo " << regNames[rd]);
+        case 0x12: //moves the lo data into the destination register
+                   D(cout << "mflo " << regNames[rd]);
                    writeDest = true; destReg = rd;
                    aluOp = ADD;
                    aluSrc1 = lo;
                    aluSrc2 = regFile[REG_ZERO];
                    break;
-        case 0x18: D(cout << "mult " << regNames[rs] << ", " << regNames[rt]);
+        case 0x18: //multiplies the contents in rs and rt and stores them in the hi and lo register
+                   D(cout << "mult " << regNames[rs] << ", " << regNames[rt]);
                    opIsMultDiv = true;
                    aluOp = MUL;
                    aluSrc1 = regFile[rs];
                    aluSrc2 = regFile[rt];
                    break;
-        case 0x1a: D(cout << "div " << regNames[rs] << ", " << regNames[rt]);
+        case 0x1a: //the same as above but with division
+                   D(cout << "div " << regNames[rs] << ", " << regNames[rt]);
                    opIsMultDiv = true;
                    aluOp = DIV;
                    aluSrc1 = regFile[rs];
                    aluSrc2 = regFile[rt];
                    break;
-        case 0x21: D(cout << "addu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
+        case 0x21: //adds rs and rt values to be stored as an unsigned value in rd
+                   D(cout << "addu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
                    writeDest = true; destReg = rd;
                    aluOp = ADD;
                    aluSrc1 = regFile[rs];
                    aluSrc2 = regFile[rt];
                    break;
-        case 0x23: D(cout << "subu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
+        case 0x23: //subtracts rt from rs and stores its unsigned value in rd
+                   D(cout << "subu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
                    writeDest = true; destReg = rd;
                    aluOp = ADD;
                    aluSrc1 = regFile[rs];
                    aluSrc2 = - regFile[rt];
                    break;
-        case 0x2a: D(cout << "slt " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
+        case 0x2a: //stores a 1 in rd if the value of rs is less than rt's value, and a 0 otherwise
+                   D(cout << "slt " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
                    writeDest = true; destReg = rd;
                    aluOp = CMP_LT;
                    aluSrc1 = regFile[rs];
@@ -144,47 +153,55 @@ void CPU::decode() {
         default: cerr << "unimplemented instruction: pc = 0x" << hex << pc - 4 << endl;
       }
       break;
-    case 0x02: D(cout << "j " << hex << ((pc & 0xf0000000) | addr << 2)); // P1: pc + 4
+    case 0x02: //jumps to the branch address
+               D(cout << "j " << hex << ((pc & 0xf0000000) | addr << 2)); // P1: pc + 4
                pc = (pc & 0xf0000000) + (addr << 2);
                break;
-    case 0x03: D(cout << "jal " << hex << ((pc & 0xf0000000) | addr << 2)); // P1: pc + 4
+    case 0x03: //jumps to the branch address and sets the program counter
+               D(cout << "jal " << hex << ((pc & 0xf0000000) | addr << 2)); // P1: pc + 4
                writeDest = true; destReg = REG_RA; // writes PC+4 to $ra
                aluOp = ADD; // ALU should pass pc thru unchanged
                aluSrc1 = pc;
                aluSrc2 = regFile[REG_ZERO]; // always reads zero
                pc = (pc & 0xf0000000) | addr << 2;
                break;
-    case 0x04: D(cout << "beq " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
+    case 0x04: //if the values of rs and rt equal, pc is assigned a new address
+               D(cout << "beq " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
                if( regFile[rs] == regFile[rt] )
                {
                    pc = pc + (simm << 2);
                }
                break;
-    case 0x05: D(cout << "bne " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
+    case 0x05: //same results as above if rs' value does not equal rt's
+               D(cout << "bne " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
                if( regFile[rs] != regFile[rt] )
                {
                    pc = pc + (simm << 2);
                }
                break;
-    case 0x09: D(cout << "addiu " << regNames[rt] << ", " << regNames[rs] << ", " << dec << simm);
+    case 0x09: //Adds the immidiate unsigned to rs and stores the result in rt
+               D(cout << "addiu " << regNames[rt] << ", " << regNames[rs] << ", " << dec << simm);
                aluOp = ADD;
                writeDest = true; destReg = rt;
                aluSrc1 = regFile[rs];
                aluSrc2 = simm;
                break;
-    case 0x0c: D(cout << "andi " << regNames[rt] << ", " << regNames[rs] << ", " << dec << uimm);
+    case 0x0c: //compares rs to the zero extended immidiate and stores the result in rt
+               D(cout << "andi " << regNames[rt] << ", " << regNames[rs] << ", " << dec << uimm);
                writeDest = true; destReg = rt;
                aluOp = AND;
                aluSrc1 = regFile[rs];
                aluSrc2 = uimm;
                break;
-    case 0x0f: D(cout << "lui " << regNames[rt] << ", " << dec << simm);
+    case 0x0f: //loads the left shifted immidiate in memory
+               D(cout << "lui " << regNames[rt] << ", " << dec << simm);
                writeDest = true; destReg = rt;
                aluOp   = ADD;
                aluSrc1 = (uimm << 16);
                aluSrc2 = regFile[REG_ZERO];
                break;
-    case 0x1a: D(cout << "trap " << hex << addr);
+    case 0x1a: //serves as a "software interrupt" in a way
+               D(cout << "trap " << hex << addr);
                switch(addr & 0xf) {
                  case 0x0: cout << endl; break;
                  case 0x1: cout << " " << (signed)regFile[rs];
@@ -196,14 +213,16 @@ void CPU::decode() {
                           stop = true;
                }
                break;
-    case 0x23: D(cout << "lw " << regNames[rt] << ", " << dec << simm << "(" << regNames[rs] << ")");
+    case 0x23: //loads a word created by rs + signed immidiate into memory and rt
+               D(cout << "lw " << regNames[rt] << ", " << dec << simm << "(" << regNames[rs] << ")");
                opIsLoad = true;
                aluOp = ADD;
                writeDest = true; destReg = rt;
                aluSrc1 = regFile[rs];
                aluSrc2 = simm;
                break;
-    case 0x2b: D(cout << "sw " << regNames[rt] << ", " << dec << simm << "(" << regNames[rs] << ")");
+    case 0x2b: //This stores the word that load word would normally load into memory and rt
+               D(cout << "sw " << regNames[rt] << ", " << dec << simm << "(" << regNames[rs] << ")");
                opIsStore = true;
                aluOp = ADD;
                aluSrc1 = regFile[rs];
