@@ -1,6 +1,6 @@
 /******************************
- * Your Name Goes Here
- * CS 3339 - Semester Goes Here
+ * Ryan Thompson
+ * CS 3339 - Spring 2018 Section 263
  ******************************/
 #include "Stats.h"
 
@@ -36,6 +36,7 @@ void Stats::registerDest(int r) {
 }
 
 void Stats::flush(int count) { // count == how many ops to flush
+    flushes += count;
 }
 
 void Stats::bubble() {

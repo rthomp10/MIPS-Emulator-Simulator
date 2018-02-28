@@ -5,6 +5,7 @@
  ******************************/
 #include "CPU.h"
 #include "Stats.h"
+#include <iomanip>
 
 Stats statistics;
 
@@ -244,12 +245,18 @@ void CPU::execute() {
 
 void CPU::mem() {
   if(opIsLoad)
+  {
     writeData = dMem.loadWord(aluOut);
+    statistics.countMemOp();
+  }
   else
     writeData = aluOut;
 
   if(opIsStore)
+  {
     dMem.storeWord(storeData, aluOut);
+    statistics.countMemOp();
+  }
 }
 
 void CPU::writeback() {
@@ -286,7 +293,7 @@ void CPU::printFinalStats() {
     cout << "Bubbles: " << statistics.getBubbles() << endl;
     cout << "Flushes: " << statistics.getFlushes() << endl;
     cout << endl;
-    cout << "Mem ops: " << (float)statistics.getMemOps()/instructions*100 << "% of instructions" << endl;
-    cout << "Branches: " << (float)statistics.getBranches()/instructions*100 << "% of instructions" << endl;
+    cout << "Mem ops: " << setprecision(3) << statistics.getMemOps()/(float)instructions*100 << "% of instructions" << endl;
+    cout << "Branches: " << (float)(statistics.getBranches()/instructions)*100 << "% of instructions" << endl;
     cout << "  % Taken: " << endl; 
 }
