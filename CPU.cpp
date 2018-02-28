@@ -288,5 +288,5 @@ void CPU::printFinalStats() {
     cout << endl;
     cout << "Mem ops: " << (float)statistics.getMemOps()/instructions*100 << "% of instructions" << endl;
     cout << "Branches: " << (float)statistics.getBranches()/instructions*100 << "% of instructions" << endl;
-    cout << "  % Taken: " << endl;
+    cout << "  % Taken: " << endl; 
 }
