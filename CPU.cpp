@@ -160,6 +160,7 @@ void CPU::decode() {
     case 0x02: //jumps to the branch address
                D(cout << "j " << hex << ((pc & 0xf0000000) | addr << 2)); // P1: pc + 4
                pc = (pc & 0xf0000000) + (addr << 2);
+               statistics.flush(2);
                break;
     case 0x03: //jumps to the branch address and sets the program counter
                D(cout << "jal " << hex << ((pc & 0xf0000000) | addr << 2)); // P1: pc + 4
@@ -174,14 +175,18 @@ void CPU::decode() {
                if( regFile[rs] == regFile[rt] )
                {
                    pc = pc + (simm << 2);
+                   statistics.countTaken();
                }
+               statistics.countBranch();
                break;
     case 0x05: //same results as above if rs' value does not equal rt's
                D(cout << "bne " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
                if( regFile[rs] != regFile[rt] )
                {
                    pc = pc + (simm << 2);
+                   statistics.countTaken();
                }
+               statistics.countBranch();
                break;
     case 0x09: //Adds the immidiate unsigned to rs and stores the result in rt
                D(cout << "addiu " << regNames[rt] << ", " << regNames[rs] << ", " << dec << simm);
@@ -293,7 +298,7 @@ void CPU::printFinalStats() {
     cout << "Bubbles: " << statistics.getBubbles() << endl;
     cout << "Flushes: " << statistics.getFlushes() << endl;
     cout << endl;
-    cout << "Mem ops: " << setprecision(3) << statistics.getMemOps()/(float)instructions*100 << "% of instructions" << endl;
-    cout << "Branches: " << (float)(statistics.getBranches()/instructions)*100 << "% of instructions" << endl;
-    cout << "  % Taken: " << endl; 
+    cout << "Mem ops: " << setprecision(1) << fixed << statistics.getMemOps()/(float)instructions*100 << "% of instructions" << endl;
+    cout << "Branches: "  << statistics.getBranches() / (float)instructions * 100 << "% of instructions" << endl;
+    cout << "  % Taken: " << statistics.getTaken() / (float)statistics.getBranches() * 100 << endl;
 }
