@@ -68,11 +68,7 @@ void CPU::decode() {
     simm   = ((int)(instr << 16)) >> 16;      //Signed Immediate [15,0]
     addr   = instr & 0x3FFFFFF;   //address [25,0] of the jump instruction
 
-  // Hint: you probably want to give all the control signals some "safe"
-  // default value here, and then override their values as necessary in each
-  // case statement below!
-    
-    
+    //safe values
     opIsLoad = false;
     opIsStore = false;
     opIsMultDiv = false;
@@ -81,7 +77,7 @@ void CPU::decode() {
     aluSrc2 = 0;
     storeData = 0;
     aluOp = ADD;
-     
+    statistics.clock(); // ** not working **/
 
   D(cout << "  " << hex << setw(8) << pc - 4 << ": ");
   switch(opcode) {
@@ -176,6 +172,7 @@ void CPU::decode() {
                {
                    pc = pc + (simm << 2);
                    statistics.countTaken();
+                   statistics.flush(2);
                }
                statistics.countBranch();
                break;
@@ -185,6 +182,7 @@ void CPU::decode() {
                {
                    pc = pc + (simm << 2);
                    statistics.countTaken();
+                   statistics.flush(2);
                }
                statistics.countBranch();
                break;
