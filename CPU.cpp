@@ -4,6 +4,9 @@
  * CS 3339 - Spring 2018 Section 263
  ******************************/
 #include "CPU.h"
+#include "Stats.h"
+
+Stats statistics;
 
 const string CPU::regNames[] = {"$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3",
                                 "$t0","$t1","$t2","$t3","$t4","$t5","$t6","$t7",
@@ -275,5 +278,15 @@ void CPU::printRegFile() {
 
 void CPU::printFinalStats() {
   cout << "Program finished at pc = 0x" << hex << pc << "  ("
-       << dec << instructions << " instructions executed)" << endl;
+       << dec << instructions << " instructions executed)" << endl << endl;
+
+    cout << "Cycles: " << statistics.getCycles() << endl;
+    cout << "CPI: " << statistics.getCycles()/instructions << endl;
+    cout << endl;
+    cout << "Bubbles: " << statistics.getBubbles() << endl;
+    cout << "Flushes: " << statistics.getFlushes() << endl;
+    cout << endl;
+    cout << "Mem ops: " << (float)statistics.getMemOps()/instructions*100 << "% of instructions" << endl;
+    cout << "Branches: " << (float)statistics.getBranches()/instructions*100 << "% of instructions" << endl;
+    cout << "  % Taken: " << endl;
 }
