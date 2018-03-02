@@ -29,10 +29,20 @@ void Stats::clock() {
   resultReg[IF1] = -1;
 }
 
-void Stats::registerSrc(int r) {
+void Stats::registerSrc(int r /* register index */) {
+    //cycles thruogh the stages to see if the destination hasn't been written yet
+    for( int i = IF1; i < PIPESTAGES; i ++ ){
+        if( resultReg[r] == resultReg[i] ){
+            //adds the necessary amount of bubbles required to reach WB
+            for( int j = i; j < PIPESTAGES; j++ ){
+                bubble();
+            }
+        }
+    }
 }
 
-void Stats::registerDest(int r) {
+void Stats::registerDest(int r /* register index */) {
+    resultReg[IF1] = r;
 }
 
 void Stats::flush(int count) { // count == how many ops to flush
@@ -40,4 +50,6 @@ void Stats::flush(int count) { // count == how many ops to flush
 }
 
 void Stats::bubble() {
+    bubbles++;
+    cycles++;
 }
