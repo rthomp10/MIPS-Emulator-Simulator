@@ -1,6 +1,6 @@
 /******************************
  * Ryan Thompson
- * Project 2
+ * Project 3
  * CS 3339 - Spring 2018 Section 263
  ******************************/
 #include "CPU.h"
@@ -96,36 +96,36 @@ void CPU::decode() {
                    break;
         case 0x08: //the programmer counter is assigned the value in rs
                    D(cout << "jr " << regNames[rs]);
-                   pc = regFile[rs];
+                   pc = regFile[rs]; statistics.registerSrc(rs);
                    statistics.flush(2);
                    break;
         case 0x10: //moves the hi data into the destination register
                    D(cout << "mfhi " << regNames[rd]);
                    writeDest = true; destReg = rd; statistics.registerDest(rd);
                    aluOp = ADD;
-                   aluSrc1 = hi;
-                   aluSrc2 = regFile[REG_ZERO]; statistics.registerSrc(REG_ZERO);
+                   aluSrc1 = hi; statistics.registerSrc(hi);
+                   aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x12: //moves the lo data into the destination register
                    D(cout << "mflo " << regNames[rd]);
                    writeDest = true; destReg = rd; statistics.registerDest(rd);
                    aluOp = ADD;
-                   aluSrc1 = lo;
-                   aluSrc2 = regFile[REG_ZERO]; statistics.registerSrc(REG_ZERO);
+                   aluSrc1 = lo; statistics.registerSrc(lo);
+                   aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x18: //multiplies the contents in rs and rt and stores them in the hi and lo register
                    D(cout << "mult " << regNames[rs] << ", " << regNames[rt]);
-                   opIsMultDiv = true;
-                   aluOp = MUL;
+                   opIsMultDiv = true; aluOp = MUL; statistics.registerDest(lo);
                    aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
                    aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
+                   statistics.registerDest(hi);
                    break;
         case 0x1a: //the same as above but with division
                    D(cout << "div " << regNames[rs] << ", " << regNames[rt]);
-                   opIsMultDiv = true;
-                   aluOp = DIV;
+                   opIsMultDiv = true; aluOp = DIV; statistics.registerDest(lo);
                    aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
                    aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
+                                          statistics.registerDest(hi);
                    break;
         case 0x21: //adds rs and rt values to be stored as an unsigned value in rd
                    D(cout << "addu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
@@ -161,12 +161,13 @@ void CPU::decode() {
                writeDest = true; destReg = REG_RA; statistics.registerDest(REG_RA); // writes PC+4 to $ra
                aluOp = ADD; // ALU should pass pc thru unchanged
                aluSrc1 = pc;
-               aluSrc2 = regFile[REG_ZERO]; statistics.registerSrc(REG_ZERO);
+               aluSrc2 = regFile[REG_ZERO];
                pc = (pc & 0xf0000000) | addr << 2;
                statistics.flush(2);
                break;
     case 0x04: //if the values of rs and rt equal, pc is assigned a new address
                D(cout << "beq " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
+               statistics.registerSrc(rs); statistics.registerSrc(rt);
                if( regFile[rs] == regFile[rt] ){
                    pc = pc + (simm << 2);
                    statistics.countTaken();
@@ -176,6 +177,7 @@ void CPU::decode() {
                break;
     case 0x05: //same results as above if rs' value does not equal rt's
                D(cout << "bne " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
+               statistics.registerSrc(rs); statistics.registerSrc(rt);
                if( regFile[rs] != regFile[rt] ){
                    pc = pc + (simm << 2);
                    statistics.countTaken();
@@ -202,15 +204,17 @@ void CPU::decode() {
                writeDest = true; destReg = rt; statistics.registerDest(rt);
                aluOp   = ADD;
                aluSrc1 = (uimm << 16);
-               aluSrc2 = regFile[REG_ZERO]; statistics.registerSrc(REG_ZERO);
+               aluSrc2 = regFile[REG_ZERO];
                break;
     case 0x1a: //serves as a "software interrupt" in a way
                D(cout << "trap " << hex << addr);
                switch(addr & 0xf) {
                  case 0x0: cout << endl; break;
                  case 0x1: cout << " " << (signed)regFile[rs];
+                           statistics.registerSrc(rs);
                            break;
                  case 0x5: cout << endl << "? "; cin >> regFile[rt];
+                           statistics.registerDest(rt);
                            break;
                  case 0xa: stop = true; break;
                  default: cerr << "unimplemented trap: pc = 0x" << hex << pc - 4 << endl;
@@ -231,7 +235,7 @@ void CPU::decode() {
                aluOp = ADD;
                aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
                aluSrc2 = simm;
-               storeData = regFile[rt];
+               storeData = regFile[rt]; statistics.registerSrc(rt);
                aluOut = regFile[rs];
                break;
     default: cerr << "unimplemented instruction: pc = 0x" << hex << pc - 4 << endl;
@@ -285,13 +289,14 @@ void CPU::printFinalStats() {
   cout << "Program finished at pc = 0x" << hex << pc << "  ("
        << dec << instructions << " instructions executed)" << endl << endl;
 
-    cout << setprecision(1) << fixed;
+    cout << setprecision(2) << fixed;
     cout << "Cycles: " << statistics.getCycles() << endl;
-    cout << "CPI: " << statistics.getCycles()/instructions << endl;
+    cout << "CPI: " << statistics.getCycles()/(float)instructions << endl;
     cout << endl;
     cout << "Bubbles: " << statistics.getBubbles() << endl;
     cout << "Flushes: " << statistics.getFlushes() << endl;
     cout << endl;
+    cout << setprecision(1) << fixed;
     cout << "Mem ops: " << statistics.getMemOps() / (float)instructions * 100 << "% of instructions" << endl;
     cout << "Branches: "  << statistics.getBranches() / (float)instructions * 100 << "% of instructions" << endl;
     cout << "  % Taken: " << statistics.getTaken() / (float)statistics.getBranches() * 100 << endl;

@@ -29,27 +29,73 @@ void Stats::clock() {
   resultReg[IF1] = -1;
 }
 
-void Stats::registerSrc(int r /* register index */) {
-    //cycles thruogh the stages to see if the destination hasn't been written yet
-    for( int i = IF1; i < PIPESTAGES; i ++ ){
-        if( resultReg[r] == resultReg[i] ){
-            //adds the necessary amount of bubbles required to reach WB
-            for( int j = i; j < PIPESTAGES; j++ ){
-                bubble();
+///////////////////////////////
+// Checks for destination registers still being processesed
+// in the pipeline identical to the source register
+///////////////////////////////
+void Stats::registerSrc(int r) {
+    //cycles through stages
+    for( int i = EXE1; i < WB; i++ ){
+        //checks to see if destination stage matches a source stage
+        if( resultReg[i] == r && resultReg[i] != -1){
+           /* undo for bubble debug
+            cout << "Dependent register == " << r << endl;
+            cout << "Before: ";
+            for(int i = IF1; i < PIPESTAGES; i++) {
+                cout << resultReg[i] << " ";
             }
+            cout << endl;
+            */
+            
+            //cycles through the rest of the stages with bubbles
+            for( int j = i; j < WB; j++ )
+            {
+                // advance pipeline flops from the detected equivalence
+                for(int j = WB; j > i; j--) {
+                    resultReg[j] = resultReg[j-1];
+                }
+                // inject no-op into the ith index
+                resultReg[i] = -1;
+                bubble();
+                
+                
+                /*printing
+                cout << "        ";
+                for(int i = IF1; i < PIPESTAGES; i++) {
+                    cout << resultReg[i] << " ";
+                }
+                cout << endl;
+                 */
+            }
+            i = WB; //stops the check loop from looping
+            /*Undo for bubble debug
+                        cout << "After:  ";
+                        for(int i = IF1; i < PIPESTAGES; i++) {
+                            cout << resultReg[i] << " ";
+                        }
+                        cout << endl << endl;
+            */
         }
     }
 }
 
-void Stats::registerDest(int r /* register index */) {
-    resultReg[IF1] = r;
+void Stats::registerDest(int r) {
+    resultReg[ID] = r;
 }
 
+//Overwrites the the fetch instructions with a noop
 void Stats::flush(int count) { // count == how many ops to flush
+    for(int i = IF1; i < EXE1; i++) {
+        resultReg[i] = -1;
+    }
+    
     flushes += count;
+    cycles+= count;
 }
 
+//Injects a bubbles after the ID stage
 void Stats::bubble() {
+    
     bubbles++;
     cycles++;
 }

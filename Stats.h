@@ -17,7 +17,8 @@ class Stats {
     int branches;
     int taken;
 
-    int resultReg[PIPESTAGES];
+    int resultReg[PIPESTAGES]; //regResult[ stage ] == the register index held at a particular stage at a pipeline
+
 
   public:
     Stats();
