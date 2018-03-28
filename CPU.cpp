@@ -103,29 +103,27 @@ void CPU::decode() {
                    D(cout << "mfhi " << regNames[rd]);
                    writeDest = true; destReg = rd; statistics.registerDest(rd);
                    aluOp = ADD;
-                   aluSrc1 = hi; statistics.registerSrc(hi);
+                   aluSrc1 = hi; statistics.registerSrc(REG_HILO);
                    aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x12: //moves the lo data into the destination register
                    D(cout << "mflo " << regNames[rd]);
                    writeDest = true; destReg = rd; statistics.registerDest(rd);
                    aluOp = ADD;
-                   aluSrc1 = lo; statistics.registerSrc(lo);
+                   aluSrc1 = lo; statistics.registerSrc(REG_HILO);
                    aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x18: //multiplies the contents in rs and rt and stores them in the hi and lo register
                    D(cout << "mult " << regNames[rs] << ", " << regNames[rt]);
-                   opIsMultDiv = true; aluOp = MUL; statistics.registerDest(lo);
+                   opIsMultDiv = true; aluOp = MUL; statistics.registerDest(REG_HILO);
                    aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
                    aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
-                   statistics.registerDest(hi);
                    break;
         case 0x1a: //the same as above but with division
                    D(cout << "div " << regNames[rs] << ", " << regNames[rt]);
-                   opIsMultDiv = true; aluOp = DIV; statistics.registerDest(lo);
+                   opIsMultDiv = true; aluOp = DIV; statistics.registerDest(REG_HILO);
                    aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
                    aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
-                                          statistics.registerDest(hi);
                    break;
         case 0x21: //adds rs and rt values to be stored as an unsigned value in rd
                    D(cout << "addu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
