@@ -12,12 +12,15 @@ class Stats {
     long long cycles;
     int flushes;
     int bubbles;
-
+	
     int memops;
     int branches;
     int taken;
-
-    int resultReg[PIPESTAGES]; //regResult[ stage ] == the register index held at a particular stage at a pipeline
+	
+    int resultReg[PIPESTAGES]; 
+	int resultStage[PIPESTAGES];
+	int numRAWHazards[PIPESTAGES] = {0};
+	int totalRAWHazards;
 
 
   public:
@@ -27,8 +30,8 @@ class Stats {
 
     void flush(int count);
 
-    void registerSrc(int r);
-    void registerDest(int r);
+    void registerSrc(int r, PIPESTAGE needed = ID);
+    void registerDest(int r, PIPESTAGE valid = ID);
 
     void countMemOp() { memops++; }
     void countBranch() { branches++; }
@@ -41,6 +44,10 @@ class Stats {
     int getMemOps() { return memops; }
     int getBranches() { return branches; }
     int getTaken() { return taken; }
+	
+	//printers
+	void printPipeline();
+	void hazardReport();
 
   private:
     void bubble();

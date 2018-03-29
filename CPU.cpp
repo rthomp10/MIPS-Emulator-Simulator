@@ -82,69 +82,69 @@ void CPU::decode() {
       switch(funct) {
         case 0x00: //shfts the data in the rs register with the given amount
                    D(cout << "sll " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
-                   writeDest = true; destReg = rd; statistics.registerDest(rd);
+                   writeDest = true; destReg = rd; statistics.registerDest(rd, MEM1);
                    aluOp = SHF_L;
-                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
+                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                    aluSrc2 = shamt;
                    break;
         case 0x03: //the same as sll, but to the right
                    D(cout << "sra " << regNames[rd] << ", " << regNames[rs] << ", " << dec << shamt);
-                   writeDest = true; destReg = rd; statistics.registerDest(rd);
+                   writeDest = true; destReg = rd; statistics.registerDest(rd, MEM1);
                    aluOp = SHF_R;
-                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
+                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                    aluSrc2 = shamt;
                    break;
         case 0x08: //the programmer counter is assigned the value in rs
                    D(cout << "jr " << regNames[rs]);
-                   pc = regFile[rs]; statistics.registerSrc(rs);
+                   pc = regFile[rs]; statistics.registerSrc(rs, ID);
                    statistics.flush(2);
                    break;
         case 0x10: //moves the hi data into the destination register
                    D(cout << "mfhi " << regNames[rd]);
-                   writeDest = true; destReg = rd; statistics.registerDest(rd);
+                   writeDest = true; destReg = rd; statistics.registerDest(rd, MEM1);
                    aluOp = ADD;
-                   aluSrc1 = hi; statistics.registerSrc(REG_HILO);
+                   aluSrc1 = hi; statistics.registerSrc(REG_HILO, EXE1);
                    aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x12: //moves the lo data into the destination register
                    D(cout << "mflo " << regNames[rd]);
-                   writeDest = true; destReg = rd; statistics.registerDest(rd);
+                   writeDest = true; destReg = rd; statistics.registerDest(rd, MEM1);
                    aluOp = ADD;
-                   aluSrc1 = lo; statistics.registerSrc(REG_HILO);
+                   aluSrc1 = lo; statistics.registerSrc(REG_HILO, EXE1);
                    aluSrc2 = regFile[REG_ZERO];
                    break;
         case 0x18: //multiplies the contents in rs and rt and stores them in the hi and lo register
                    D(cout << "mult " << regNames[rs] << ", " << regNames[rt]);
-                   opIsMultDiv = true; aluOp = MUL; statistics.registerDest(REG_HILO);
-                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
-                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
+                   opIsMultDiv = true; aluOp = MUL; statistics.registerDest(REG_HILO, WB);
+                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
+                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt, EXE1);
                    break;
         case 0x1a: //the same as above but with division
                    D(cout << "div " << regNames[rs] << ", " << regNames[rt]);
-                   opIsMultDiv = true; aluOp = DIV; statistics.registerDest(REG_HILO);
-                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
-                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
+                   opIsMultDiv = true; aluOp = DIV; statistics.registerDest(REG_HILO, WB);
+                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
+                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt, EXE1);
                    break;
         case 0x21: //adds rs and rt values to be stored as an unsigned value in rd
                    D(cout << "addu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
-                   writeDest = true; destReg = rd; statistics.registerDest(rd);
+                   writeDest = true; destReg = rd; statistics.registerDest(rd, MEM1);
                    aluOp = ADD;
-                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
-                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
+                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
+                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt, EXE1);
                    break;
         case 0x23: //subtracts rt from rs and stores its unsigned value in rd
                    D(cout << "subu " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
-                   writeDest = true; destReg = rd; statistics.registerDest(rd);
+                   writeDest = true; destReg = rd; statistics.registerDest(rd, MEM1);
                    aluOp = ADD;
-                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
-                   aluSrc2 = - regFile[rt]; statistics.registerSrc(rt);
+                   aluSrc1 = regFile[rs];  statistics.registerSrc(rs, EXE1);
+                   aluSrc2 = -regFile[rt]; statistics.registerSrc(rt, EXE1);
                    break;
-        case 0x2a: //stores a 1 in rd if the value of rs is less than rt's value, and a 0 otherwise
+        case 0x2a: //stores a '1' in rd if the value of rs is less than rt's value, and a 0 otherwise
                    D(cout << "slt " << regNames[rd] << ", " << regNames[rs] << ", " << regNames[rt]);
-                   writeDest = true; destReg = rd; statistics.registerDest(rd);
+                   writeDest = true; destReg = rd; statistics.registerDest(rd, MEM1);
                    aluOp = CMP_LT;
-                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
-                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt);
+                   aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
+                   aluSrc2 = regFile[rt]; statistics.registerSrc(rt, EXE1);
                    break;
         default: cerr << "unimplemented instruction: pc = 0x" << hex << pc - 4 << endl;
       }
@@ -156,7 +156,7 @@ void CPU::decode() {
                break;
     case 0x03: //jumps to the branch address and sets the program counter
                D(cout << "jal " << hex << ((pc & 0xf0000000) | addr << 2)); // P1: pc + 4
-               writeDest = true; destReg = REG_RA; statistics.registerDest(REG_RA); // writes PC+4 to $ra
+               writeDest = true; destReg = REG_RA; statistics.registerDest(REG_RA, EXE1); // writes PC+4 to $ra
                aluOp = ADD; // ALU should pass pc thru unchanged
                aluSrc1 = pc;
                aluSrc2 = regFile[REG_ZERO];
@@ -165,7 +165,7 @@ void CPU::decode() {
                break;
     case 0x04: //if the values of rs and rt equal, pc is assigned a new address
                D(cout << "beq " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
-               statistics.registerSrc(rs); statistics.registerSrc(rt);
+               statistics.registerSrc(rs, ID); statistics.registerSrc(rt, ID);
                if( regFile[rs] == regFile[rt] ){
                    pc = pc + (simm << 2);
                    statistics.countTaken();
@@ -175,7 +175,7 @@ void CPU::decode() {
                break;
     case 0x05: //same results as above if rs' value does not equal rt's
                D(cout << "bne " << regNames[rs] << ", " << regNames[rt] << ", " << pc + (simm << 2));
-               statistics.registerSrc(rs); statistics.registerSrc(rt);
+               statistics.registerSrc(rs, ID); statistics.registerSrc(rt, ID);
                if( regFile[rs] != regFile[rt] ){
                    pc = pc + (simm << 2);
                    statistics.countTaken();
@@ -185,21 +185,21 @@ void CPU::decode() {
                break;
     case 0x09: //Adds the immidiate unsigned to rs and stores the result in rt
                D(cout << "addiu " << regNames[rt] << ", " << regNames[rs] << ", " << dec << simm);
-               writeDest = true; destReg = rt; statistics.registerDest(rt);
+               writeDest = true; destReg = rt; statistics.registerDest(rt, MEM1);
                aluOp = ADD;
-               aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
+               aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                aluSrc2 = simm;
                break;
     case 0x0c: //compares rs to the zero extended immidiate and stores the result in rt
                D(cout << "andi " << regNames[rt] << ", " << regNames[rs] << ", " << dec << uimm);
-               writeDest = true; destReg = rt; statistics.registerDest(rt);
+               writeDest = true; destReg = rt; statistics.registerDest(rt, MEM1);
                aluOp = AND;
-               aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
+               aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                aluSrc2 = uimm;
                break;
     case 0x0f: //loads the left shifted immidiate in memory
                D(cout << "lui " << regNames[rt] << ", " << dec << simm);
-               writeDest = true; destReg = rt; statistics.registerDest(rt);
+               writeDest = true; destReg = rt; statistics.registerDest(rt, MEM1);
                aluOp   = ADD;
                aluSrc1 = (uimm << 16);
                aluSrc2 = regFile[REG_ZERO];
@@ -209,10 +209,10 @@ void CPU::decode() {
                switch(addr & 0xf) {
                  case 0x0: cout << endl; break;
                  case 0x1: cout << " " << (signed)regFile[rs];
-                           statistics.registerSrc(rs);
+                           statistics.registerSrc(rs, EXE1);
                            break;
                  case 0x5: cout << endl << "? "; cin >> regFile[rt];
-                           statistics.registerDest(rt);
+                           statistics.registerDest(rt, MEM1);
                            break;
                  case 0xa: stop = true; break;
                  default: cerr << "unimplemented trap: pc = 0x" << hex << pc - 4 << endl;
@@ -221,19 +221,19 @@ void CPU::decode() {
                break;
     case 0x23: //loads a word created by rs + signed immidiate into memory and rt
                D(cout << "lw " << regNames[rt] << ", " << dec << simm << "(" << regNames[rs] << ")");
-               writeDest = true; destReg = rt; statistics.registerDest(rt);
+               writeDest = true; destReg = rt; statistics.registerDest(rt, WB);
                opIsLoad = true;
                aluOp = ADD;
-               aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
+               aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                aluSrc2 = simm;
                break;
     case 0x2b: //This stores the word that load word would normally load into memory and rt
                D(cout << "sw " << regNames[rt] << ", " << dec << simm << "(" << regNames[rs] << ")");
                opIsStore = true;
                aluOp = ADD;
-               aluSrc1 = regFile[rs]; statistics.registerSrc(rs);
+               aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                aluSrc2 = simm;
-               storeData = regFile[rt]; statistics.registerSrc(rt);
+               storeData = regFile[rt]; statistics.registerSrc(rt, MEM1);
                aluOut = regFile[rs];
                break;
     default: cerr << "unimplemented instruction: pc = 0x" << hex << pc - 4 << endl;
@@ -295,7 +295,10 @@ void CPU::printFinalStats() {
     cout << "Flushes: " << statistics.getFlushes() << endl;
     cout << endl;
     cout << setprecision(1) << fixed;
-    cout << "Mem ops: " << statistics.getMemOps() / (float)instructions * 100 << "% of instructions" << endl;
-    cout << "Branches: "  << statistics.getBranches() / (float)instructions * 100 << "% of instructions" << endl;
-    cout << "  % Taken: " << statistics.getTaken() / (float)statistics.getBranches() * 100 << endl;
+    //cout << "Mem ops: " << statistics.getMemOps() / (float)instructions * 100 << "% of instructions" << endl;
+    //cout << "Branches: "  << statistics.getBranches() / (float)instructions * 100 << "% of instructions" << endl;
+    //cout << "  % Taken: " << statistics.getTaken() / (float)statistics.getBranches() * 100 << endl;
+	//cout << endl;
+	statistics.hazardReport();
+	
 }

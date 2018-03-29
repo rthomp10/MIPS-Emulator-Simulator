@@ -8,10 +8,10 @@ Stats::Stats() {
   cycles = PIPESTAGES - 1; // pipeline startup cost
   flushes = 0;
   bubbles = 0;
-
   memops = 0;
   branches = 0;
-  taken = 0;
+  taken = 0; 
+  totalRAWHazards = 0;
 
   //pipeline iitialization
   for(int i = IF1; i < PIPESTAGES; i++) {
@@ -32,50 +32,41 @@ void Stats::clock() {
 // Checks for destination registers still being processesed
 // in the pipeline identical to the source register
 ///////////////////////////////////////////////////////////
-void Stats::registerSrc(int r) {
+void Stats::registerSrc(int r, PIPESTAGE needed) {
     //cycles through stages
-    for( int i = EXE1; i < WB; i++ )
+    for( int i = EXE1; i < needed; i++ )
 	{
 		//checks to see if destination stage matches a source stage
        if( resultReg[i] == r)
 	   {
-		   /*
 		   //Pre-bubble pipeline print
-		   cout << "Source register == " << r << endl;
-	       cout << "Before: ";
-		   for(int k = IF1; k < PIPESTAGES; k++) 
-				{ cout << resultReg[k] << " "; }
-		   cout << endl;
-		   */
-			
+		   //cout << "Source register == " << r << endl;
+	       //cout << "Before: ";
+		   //printPipeline();
+		   //cout << endl;
+		   
+		   totalRAWHazards++;
+		   numRAWHazards[needed]++;
+		   
 			//injects bubbles
-            for( int j = i; j < WB; j++ )
+            for( int j = i; j < needed; j++ )
             {
 				bubble();
-				
-				/*
-				//prints per bubble injection pipeline
-				cout << "        ";
-				for(int k = IF1; k < PIPESTAGES; k++) 
-					{ cout << resultReg[k] << " "; }
-				cout << endl;
-				*/
+				//cout << "        ";
+				//printPipeline();
             }
 			break; //stops the check loop from looping
 			
-			/*
-			//prints final result
-			cout << "After:  ";
-			for(int k = IF1; k < PIPESTAGES; k++) 
-				{ cout << resultReg[k] << " "; }
-			cout << endl << endl;
-			*/
+			//prints final pipeline stage
+			//cout << "After:  ";
+			//printPipeline();
         }
     }
 }
 
-void Stats::registerDest(int r) {
+void Stats::registerDest(int r, PIPESTAGE valid) {
 	resultReg[ID] = r;
+	resultStage[ID] = valid;
 }
 
 //Overwrites the the fetch instructions with a noop
@@ -94,4 +85,21 @@ void Stats::bubble() {
     for(int i = WB; i > EXE1; i--)
   	  { resultReg[i] = resultReg[i-1]; }
 	resultReg[EXE1] = -1;
+}
+
+void Stats::printPipeline(){
+	for(int k = IF1; k < PIPESTAGES; k++) 
+		{ cout << resultReg[k] << " "; }
+}
+
+void Stats::hazardReport(){
+	cout << "RAW hazards: "  << totalRAWHazards << " ( __ per every ____ instructions)" << endl;
+	cout << "  On EXE1 op: " << numRAWHazards[EXE1] << " (" 
+		                     << (int)((numRAWHazards[EXE1]/(float)totalRAWHazards) * 100) << " %)" << endl;
+	cout << "  On EXE2 op: " << numRAWHazards[EXE2] << " ("
+	                         << (int)((numRAWHazards[EXE2]/(float)totalRAWHazards) * 100) << " %)" << endl;
+	cout << "  On MEM1 op: " << numRAWHazards[MEM1] << " ("
+	                         << (int)((numRAWHazards[MEM1]/(float)totalRAWHazards) * 100) << " %)" << endl;
+	cout << "  On MEM2 op: " << numRAWHazards[MEM2] << " ("
+		                     << (int)((numRAWHazards[MEM2]/(float)totalRAWHazards) * 100) << " %)" << endl;
 }

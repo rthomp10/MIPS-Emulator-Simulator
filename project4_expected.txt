@@ -1,0 +1,78 @@
+hash.mips:
+=========
+
+Cycles: 89788
+CPI: 2.30
+
+Bubbles: 44136
+Flushes: 6526
+
+
+nqueens.mips:
+============
+
+Cycles: 432723233
+CPI: 2.09
+
+Bubbles: 200604886
+Flushes: 24671130
+
+
+pqueue.mips:
+===========
+
+Cycles: 18557
+CPI: 1.94
+
+Bubbles: 7382
+Flushes: 1624
+
+
+prime.mips:
+==========
+
+Cycles: 676319
+CPI: 2.46
+
+Bubbles: 347163
+Flushes: 54450
+
+
+qsort.mips:
+==========
+
+Cycles: 106731
+CPI: 2.32
+
+Bubbles: 52443
+Flushes: 8334
+
+
+rand.mips:
+=========
+
+Cycles: 10200
+CPI: 2.12
+
+Bubbles: 5082
+Flushes: 294
+
+
+regslarge.mips:
+==============
+
+Cycles: 65798
+CPI: 2.01
+
+Bubbles: 33036
+Flushes: 6
+
+
+sssp.mips:
+=========
+
+Cycles: 983220
+CPI: 2.19
+
+Bubbles: 481710
+Flushes: 51990
