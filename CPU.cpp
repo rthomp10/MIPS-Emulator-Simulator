@@ -29,7 +29,7 @@ CPU::CPU(uint32_t pc, Memory &iMem, Memory &dMem) : pc(pc), iMem(iMem), dMem(dMe
 
 void CPU::run() {
   while(!stop) {
-    instructions++;
+    statistics.instruction();
 
     fetch();
     decode();
@@ -94,7 +94,7 @@ void CPU::decode() {
                    aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                    aluSrc2 = shamt;
                    break;
-        case 0x08: //the programmer counter is assigned the value in rs
+        case 0x08: //the program counter is assigned the value in rs
                    D(cout << "jr " << regNames[rs]);
                    pc = regFile[rs]; statistics.registerSrc(rs, ID);
                    statistics.flush(2);
@@ -197,7 +197,7 @@ void CPU::decode() {
                aluSrc1 = regFile[rs]; statistics.registerSrc(rs, EXE1);
                aluSrc2 = uimm;
                break;
-    case 0x0f: //loads the left shifted immidiate in memory
+    case 0x0f: //loads the left shifted immidiate in the register
                D(cout << "lui " << regNames[rt] << ", " << dec << simm);
                writeDest = true; destReg = rt; statistics.registerDest(rt, MEM1);
                aluOp   = ADD;
@@ -285,20 +285,20 @@ void CPU::printRegFile() {
 
 void CPU::printFinalStats() {
   cout << "Program finished at pc = 0x" << hex << pc << "  ("
-       << dec << instructions << " instructions executed)" << endl << endl;
+       << dec << statistics.getInstructions() << " instructions executed)" << endl << endl;
 
     cout << setprecision(2) << fixed;
     cout << "Cycles: " << statistics.getCycles() << endl;
-    cout << "CPI: " << statistics.getCycles()/(float)instructions << endl;
+    cout << "CPI: " << statistics.getCycles()/(float)statistics.getInstructions() << endl;
     cout << endl;
     cout << "Bubbles: " << statistics.getBubbles() << endl;
     cout << "Flushes: " << statistics.getFlushes() << endl;
     cout << endl;
-    cout << setprecision(1) << fixed;
+    cout << setprecision(2) << fixed;
     //cout << "Mem ops: " << statistics.getMemOps() / (float)instructions * 100 << "% of instructions" << endl;
     //cout << "Branches: "  << statistics.getBranches() / (float)instructions * 100 << "% of instructions" << endl;
     //cout << "  % Taken: " << statistics.getTaken() / (float)statistics.getBranches() * 100 << endl;
 	//cout << endl;
-	statistics.hazardReport();
+	statistics.getHazardReport();
 	
 }

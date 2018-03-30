@@ -10,6 +10,7 @@ enum PIPESTAGE { IF1 = 0, IF2 = 1, ID = 2, EXE1 = 3, EXE2 = 4, MEM1 = 5,
 class Stats {
   private:
     long long cycles;
+	long long instructions;
     int flushes;
     int bubbles;
 	
@@ -19,8 +20,10 @@ class Stats {
 	
     int resultReg[PIPESTAGES]; 
 	int resultStage[PIPESTAGES];
-	int numRAWHazards[PIPESTAGES] = {0};
+	int numRAWHazards[PIPESTAGES];
 	int totalRAWHazards;
+	
+	int temp = 0;
 
 
   public:
@@ -36,6 +39,8 @@ class Stats {
     void countMemOp() { memops++; }
     void countBranch() { branches++; }
     void countTaken() { taken++; }
+	void instruction() { instructions++; }
+	void tempAdd(){ temp++; }
 
     // getters
     long long getCycles() { return cycles; }
@@ -44,10 +49,12 @@ class Stats {
     int getMemOps() { return memops; }
     int getBranches() { return branches; }
     int getTaken() { return taken; }
+	long long getInstructions() { return instructions; }
+	int getTemp(){ return temp; }
 	
 	//printers
 	void printPipeline();
-	void hazardReport();
+	void getHazardReport();
 
   private:
     void bubble();
