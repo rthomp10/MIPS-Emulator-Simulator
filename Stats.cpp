@@ -12,6 +12,10 @@ Stats::Stats() {
   branches = 0;
   taken = 0; 
   totalRAWHazards = 0;
+  temp = 0;
+  bubbleCount = 0;
+  clocksTillNeeded = 0;
+  clocksTillResult = 0;
 
   //pipeline iitialization
   for(int i = IF1; i < PIPESTAGES; i++) {
@@ -55,20 +59,23 @@ void Stats::registerSrc(int r, PIPESTAGE needed) {
 		   totalRAWHazards++;
 		   numRAWHazards[i]++;
 		   
-			//injects bubbles
-            for( int j = i; j < resultStage[i]-1; j++ )
+		   clocksTillResult = resultStage[i] - i;
+		   clocksTillNeeded = needed - ID;
+
+		   //injects bubbles
+            for( int j = 0; j < clocksTillResult - clocksTillNeeded; j++ )
 			{
 				bubble();
 				//cout << "        ";
 				//printPipeline();
+				//printResultStage();
 				//cout << endl;
             }
-			
 			
 			//prints final pipeline stage
 			//cout << "After:  ";
 			//printPipeline();
-			//cout << endl << endl;
+			//cout << endl;
 			break; //stops the check loop from looping
         }
     }
@@ -94,8 +101,10 @@ void Stats::bubble() {
     // advance pipeline flops in front if ID
     for(int i = WB; i > EXE1; i--){ 
 		resultReg[i] = resultReg[i-1];
+		resultStage[i] = resultStage[i-1];
 	}
 	resultReg[EXE1] = -1;
+	resultStage[EXE1] = -1;
 }
 
 void Stats::printPipeline(){
@@ -103,16 +112,21 @@ void Stats::printPipeline(){
 		{ cout << resultReg[k] << " "; }
 }
 
+void Stats::printResultStage(){
+	for(int k = IF1; k < PIPESTAGES; k++) 
+		{ cout << resultStage[k] << " "; }
+}
+
 void Stats::getHazardReport(){
-	cout << "RAW hazards: "  << totalRAWHazards << " ( 1 per every " 
-		                     << instructions/(float)totalRAWHazards << " instructions)" << endl;
+	cout << "RAW hazards: "  << totalRAWHazards << " (1 per every " 
+		                     << (instructions/(float)totalRAWHazards) << " instructions)" << endl;
 	cout << "  On EXE1 op: " << numRAWHazards[EXE1] << " (" 
-		                     << (int)((numRAWHazards[EXE1]/(float)totalRAWHazards) * 100) << " %)" << endl;
+		                     << (int)(0.5+((numRAWHazards[EXE1]/(float)totalRAWHazards)) * 100) << "%)" << endl;
 	cout << "  On EXE2 op: " << numRAWHazards[EXE2] << " ("
-	                         << (int)((numRAWHazards[EXE2]/(float)totalRAWHazards) * 100) << " %)" << endl;
+	                         << (int)(0.5+((numRAWHazards[EXE2]/(float)totalRAWHazards)) * 100) << "%)" << endl;
 	cout << "  On MEM1 op: " << numRAWHazards[MEM1] << " ("
-	                         << (int)((numRAWHazards[MEM1]/(float)totalRAWHazards) * 100) << " %)" << endl;
+	                         << (int)(0.5+((numRAWHazards[MEM1]/(float)totalRAWHazards)) * 100) << "%)" << endl;
 	cout << "  On MEM2 op: " << numRAWHazards[MEM2] << " ("
-		                     << (int)((numRAWHazards[MEM2]/(float)totalRAWHazards) * 100) << " %)" << endl;
+		                     << (int)(0.5+((numRAWHazards[MEM2]/(float)totalRAWHazards)) * 100) << "%)" << endl;
 	//cout << "Temp = " << getTemp() << endl;
 }

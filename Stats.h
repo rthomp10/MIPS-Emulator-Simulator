@@ -22,8 +22,11 @@ class Stats {
 	int resultStage[PIPESTAGES];
 	int numRAWHazards[PIPESTAGES];
 	int totalRAWHazards;
+	int clocksTillNeeded;
+	int clocksTillResult;
 	
-	int temp = 0;
+	int temp;
+	int bubbleCount;
 
 
   public:
@@ -55,6 +58,7 @@ class Stats {
 	//printers
 	void printPipeline();
 	void getHazardReport();
+	void printResultStage();
 
   private:
     void bubble();
