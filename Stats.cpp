@@ -16,6 +16,8 @@ Stats::Stats() {
   bubbleCount = 0;
   clocksTillNeeded = 0;
   clocksTillResult = 0;
+  stalls = 0;
+  
 
   //pipeline iitialization
   for(int i = IF1; i < PIPESTAGES; i++) {
@@ -129,4 +131,9 @@ void Stats::getHazardReport(){
 	cout << "  On MEM2 op: " << numRAWHazards[MEM2] << " ("
 		                     << (int)(0.5+((numRAWHazards[MEM2]/(float)totalRAWHazards)) * 100) << "%)" << endl;
 	//cout << "Temp = " << getTemp() << endl;
+}
+
+void Stats::stall(int numStalls)
+{  
+	stalls += numStalls;
 }

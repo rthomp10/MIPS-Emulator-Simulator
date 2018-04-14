@@ -27,6 +27,9 @@ class Stats {
 	
 	int temp;
 	int bubbleCount;
+	
+	//cache statistics
+	int stalls;
 
 
   public:
@@ -34,7 +37,8 @@ class Stats {
 
     void clock();
 
-    void flush(int count);
+    void flush(int);
+	void stall(int);
 
     void registerSrc(int r, PIPESTAGE needed = ID);
     void registerDest(int r, PIPESTAGE valid = ID);
@@ -54,6 +58,7 @@ class Stats {
     int getTaken() { return taken; }
 	long long getInstructions() { return instructions; }
 	int getTemp(){ return temp; }
+	int getStalls(){ return stalls; }
 	
 	//printers
 	void printPipeline();

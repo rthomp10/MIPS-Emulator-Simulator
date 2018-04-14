@@ -5,9 +5,11 @@
  ******************************/
 #include "CPU.h"
 #include "Stats.h"
+#include "CacheStats.h"
 #include <iomanip>
 
 Stats statistics;
+CacheStats cacheStats;
 
 const string CPU::regNames[] = {"$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3",
                                 "$t0","$t1","$t2","$t3","$t4","$t5","$t6","$t7",
@@ -48,15 +50,8 @@ void CPU::fetch() {
 }
 
 void CPU::decode() {
-  uint32_t opcode;      // opcode field
-  uint32_t rs, rt, rd;  // register specifiers
-  uint32_t shamt;       // shift amount (R-type)
-  uint32_t funct;       // funct field (R-type)
-  uint32_t uimm;        // unsigned version of immediate (I-type)
-  int32_t  simm;        // signed version of immediate (I-type)
-  uint32_t addr;        // jump address offset field (J-type)
-
-    opcode = (instr >> 26);         //Register Operation, [31,26] of the instruction
+    
+	opcode = (instr >> 26);         //Register Operation, [31,26] of the instruction
     rs     = (instr >> 21) & 0x1f;  //Source register, [25,21] of the instruction
     rt     = (instr >> 16) & 0x1f;  //Temporary Register, [20,16] of the instruction
     rd     = (instr >> 11) & 0x1f;  //Destination Register [15,11] of the Register Operation
@@ -249,6 +244,7 @@ void CPU::mem() {
   if(opIsLoad){
     writeData = dMem.loadWord(aluOut);
     statistics.countMemOp();
+	cacheStats.access(addr, LOAD);
   }
   else
     writeData = aluOut;
@@ -256,6 +252,7 @@ void CPU::mem() {
   if(opIsStore){
     dMem.storeWord(storeData, aluOut);
     statistics.countMemOp();
+	cacheStats.access(addr, STORE); 
   }
 }
 
@@ -293,12 +290,14 @@ void CPU::printFinalStats() {
     cout << endl;
     cout << "Bubbles: " << statistics.getBubbles() << endl;
     cout << "Flushes: " << statistics.getFlushes() << endl;
+	cout << "Stalls:  " << statistics.getStalls() << endl;
     cout << endl;
     cout << setprecision(2) << fixed;
     //cout << "Mem ops: " << statistics.getMemOps() / (float)instructions * 100 << "% of instructions" << endl;
     //cout << "Branches: "  << statistics.getBranches() / (float)instructions * 100 << "% of instructions" << endl;
     //cout << "  % Taken: " << statistics.getTaken() / (float)statistics.getBranches() * 100 << endl;
 	//cout << endl;
-	statistics.getHazardReport();
+	//statistics.getHazardReport();
+	cacheStats.printFinalStats();
 	
 }

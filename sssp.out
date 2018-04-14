@@ -1,0 +1,24 @@
+CS 3339 MIPS Simulator
+Cache Config: 1024 B (32 bytes/block, 8 sets, 4 ways)
+  Latencies: Lookup = 0 cycles, Read = 30 cycles, Write = 10 cycles
+Running: sssp.mips
+
+ 7 1
+
+Program finished at pc = 0x400440  (449513 instructions executed)
+
+Cycles: 1396800
+CPI: 3.11
+
+Bubbles: 481710
+Flushes: 51990
+Stalls:  413580
+
+Accesses: 197484
+  Loads: 146709
+  Stores: 50775
+Misses: 12044
+  Load misses: 8559
+  Store misses: 3485
+Writebacks: 5229
+Hit Ratio: 93.9%

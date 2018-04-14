@@ -22,6 +22,13 @@ class CPU {
 
     uint32_t pc;
     uint32_t instr;
+    uint32_t opcode;      // opcode field
+    uint32_t rs, rt, rd;  // register specifiers
+    uint32_t shamt;       // shift amount (R-type)
+    uint32_t funct;       // funct field (R-type)
+    uint32_t uimm;        // unsigned version of immediate (I-type)
+    int32_t  simm;        // signed version of immediate (I-type)
+    uint32_t addr;        // jump address offset field (J-type)
 
     // Register file
     uint32_t regFile[NREGS];
